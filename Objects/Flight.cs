@@ -101,5 +101,138 @@ namespace Airline.Objects
       }
       return AllFlights;
     }
+
+    public void Save()
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("INSERT INTO flights (name, departure, arrival) OUTPUT INSERTED.id VALUES (@FlightName, @FlightDeparture, @FlightArrival);", conn);
+
+      SqlParameter nameParameter = new SqlParameter();
+      nameParameter.ParameterName = "@FlightName";
+      nameParameter.Value = this.GetName();
+
+      SqlParameter departureParameter = new SqlParameter();
+      departureParameter.ParameterName = "@FlightDeparture";
+      departureParameter.Value = this.GetDeparture();
+
+      SqlParameter arrivalParameter = new SqlParameter();
+      arrivalParameter.ParameterName = "@FlightArrival";
+      arrivalParameter.Value = this.GetArrival();
+
+      cmd.Parameters.Add(nameParameter);
+      cmd.Parameters.Add(departureParameter);
+      cmd.Parameters.Add(arrivalParameter);
+
+      rdr = cmd.ExecuteReader();
+
+      while(rdr.Read())
+      {
+        this._id = rdr.GetInt32(0);
+      }
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
+    public static Flight Find(int id)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr = null;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand ("SELECT * FROM flights WHERE id = @FlightId;", conn);
+      SqlParameter flightIdParameter = new SqlParameter();
+      flightIdParameter.ParameterName = "@FlightId";
+      flightIdParameter.Value = id.ToString();
+      cmd.Parameters.Add(flightIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      int foundFlightId = 0;
+      string foundFlightName = "";
+      DateTime foundDeparture = new DateTime();
+      DateTime foundArrival = new DateTime();
+
+      while(rdr.Read())
+      {
+        foundFlightId = rdr.GetInt32(0);
+        foundFlightName = rdr.GetString(1);
+        foundDeparture = rdr.GetDateTime(2);
+        foundArrival = rdr.GetDateTime(3);
+      }
+      Flight foundFlight = new Flight(foundFlightName, foundDeparture, foundArrival, foundFlightId);
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+      if (conn != null)
+      {
+        conn.Close();
+      }
+      return foundFlight;
+    }
+
+    public void Update(string newName, DateTime newDeparture, DateTime newArrival)
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("UPDATE flights SET name = @NewName, departure = @NewDeparture, arrival = @NewArrival OUTPUT INSERTED.name, INSERTED.departure, INSERTED.arrival WHERE id = @FlightId;", conn);
+
+      SqlParameter newNameParameter = new SqlParameter();
+      newNameParameter.ParameterName = "@NewName";
+      newNameParameter.Value = newName;
+      cmd.Parameters.Add(newNameParameter);
+
+      SqlParameter newDepartureParameter = new SqlParameter();
+      newDepartureParameter.ParameterName = "@NewDeparture";
+      newDepartureParameter.Value = newDeparture;
+      cmd.Parameters.Add(newDepartureParameter);
+
+      SqlParameter newArrivalParameter = new SqlParameter();
+      newArrivalParameter.ParameterName = "@NewArrival";
+      newArrivalParameter.Value = newArrival;
+      cmd.Parameters.Add(newArrivalParameter);
+
+      SqlParameter flightIdParameter = new SqlParameter();
+      flightIdParameter.ParameterName = "@FlightId";
+      flightIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(flightIdParameter);
+      rdr = cmd.ExecuteReader();
+
+      while(rdr.Read())
+      {
+        this._name = rdr.GetString(0);
+        this._departure = rdr.GetDateTime(1);
+        this._arrival = rdr.GetDateTime(2);
+      }
+
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
+    public static void DeleteAll()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+      SqlCommand cmd = new SqlCommand("DELETE FROM flights;", conn);
+      cmd.ExecuteNonQuery();
+    }
   }
 }

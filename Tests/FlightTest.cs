@@ -6,7 +6,7 @@ using System.Data.SqlClient;
 
 namespace Airline.Objects
 {
-  public class FlightTest
+  public class FlightTest : IDisposable
   {
     public FlightTest()
     {
@@ -29,6 +29,71 @@ namespace Airline.Objects
 
       //Assert
       Assert.Equal(firstFlight, secondFlight);
+    }
+
+    [Fact]
+    public void Test_Save_SavesToDatabase()
+    {
+      //Arrange
+      Flight testFlight = new Flight("Delta12", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+
+      //Act
+      testFlight.Save();
+      List<Flight> result = Flight.GetAll();
+      List<Flight> testFlights = new List<Flight>{testFlight};
+
+      //Assert
+      Assert.Equal(testFlights, result);
+    }
+
+    [Fact]
+    public void Test_Save_AssignsIdToObject()
+    {
+      //Arrange
+      Flight testFlight = new Flight("Delta33", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+
+      //Act
+      testFlight.Save();
+      Flight savedFlight = Flight.GetAll()[0];
+
+      int result = savedFlight.GetId();
+      int testId = testFlight.GetId();
+
+      //Assert
+      Assert.Equal(testId, result);
+    }
+
+    [Fact]
+    public void Test_Find_FindsFlightInDatabase()
+    {
+      //Arrange
+      Flight testFlight = new Flight("Delta33", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+      testFlight.Save();
+
+      //Act
+      Flight foundFlight = Flight.Find(testFlight.GetId());
+
+      //Assert
+      Assert.Equal(testFlight, foundFlight);
+    }
+    [Fact]
+    public void Test_Update_UpdatesFlightInDatabase()
+    {
+      //Arrange
+      Flight testFlight = new Flight("Delta33", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+      testFlight.Save();
+      string newFlightName = "Delta66";
+
+      //Act
+      testFlight.Update(newFlightName, new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+
+      //Assert
+      Assert.Equal(newFlightName, testFlight.GetName());
+    }
+
+    public void Dispose()
+    {
+      Flight.DeleteAll();
     }
   }
 }
