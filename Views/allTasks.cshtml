@@ -1,0 +1,19 @@
+<h2> To Do List </h2>
+
+<ul>
+
+@foreach (var task in @Model)
+{
+  <li>@task.GetDescription()</li>
+}
+
+</ul>
+
+<form action="/alltasks" method="post">
+  <label for="newTask">Create A New Task</label>
+  <input id="newTask" name="newTask">
+  <button type="submit">Add Task</button>
+</form>
+<form action="/clearedTasks" method="post">
+  <button type="submit">Clear All Tasks</button>
+</form>

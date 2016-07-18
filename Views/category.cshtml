@@ -1,0 +1,33 @@
+<h2>Here are all the tasks in this category:</h2>
+
+@if (@Model["categoryTasks"].Count == 0)
+{
+  <p>No tasks have been added yet!</p>
+}
+else
+{
+  <ol>
+    @foreach (var task in @Model["categoryTasks"])
+    {
+      <li>@task.GetDescription()<br>
+        Due: @task.GetDueDate()</li>
+    }
+  </ol>
+}
+
+<h4>Add a task to this category:</h4>
+<form action='/category/add_task' method='post'>
+  <input id='category-id' name='category-id' type='hidden' value='@Model["category"].GetId()'>
+  <label for='task-id'>Select a task</label>
+  <select id='task-id' name='task-id' type='text'>
+    @foreach (var task in @Model["allTasks"])
+    {
+      <option value='@task.GetId()'>@task.GetDescription()</option>
+    }
+  </select>
+  <button type='submit'>Add</button>
+</form>
+
+<p><a href="/categories/new">Add a new category</a></p>
+<p><a href="/category/delete/@Model["category"].GetId()">Delete category</a>
+<p><a href="/">Return to Main Page</a></p>
