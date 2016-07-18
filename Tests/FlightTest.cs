@@ -85,10 +85,25 @@ namespace Airline.Objects
       string newFlightName = "Delta66";
 
       //Act
-      testFlight.Update(newFlightName, new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+      testFlight.Update(newFlightName, new DateTime(2015, 1, 18), new DateTime(2015, 1, 19), "On Time");
 
       //Assert
       Assert.Equal(newFlightName, testFlight.GetName());
+    }
+
+    [Fact]
+    public void Test_Update_UpdatesFlightStatusInDatabase()
+    {
+      //Arrange
+      Flight testFlight = new Flight("Delta33", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+      testFlight.Save();
+      string newStatus = "Late";
+
+      //Act
+      testFlight.Update("Delta33", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19), newStatus);
+
+      //Assert
+      Assert.Equal(newStatus, testFlight.GetStatus());
     }
 
     [Fact]

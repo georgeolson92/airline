@@ -10,13 +10,15 @@ namespace Airline.Objects
     string _name;
     DateTime _departure;
     DateTime _arrival;
+    string _status;
 
-    public Flight (string name, DateTime departure, DateTime arrival, int id =0)
+    public Flight (string name, DateTime departure, DateTime arrival, string status = "On Time", int id =0)
     {
       _id = id;
       _name = name;
       _departure = departure;
       _arrival = arrival;
+      _status = status;
     }
 
     public override bool Equals(System.Object otherFlight)
@@ -32,7 +34,8 @@ namespace Airline.Objects
         bool nameEquality = this.GetName() == newFlight.GetName();
         bool departureEquality = this.GetDeparture() == newFlight.GetDeparture();
         bool arrivalEquality = this.GetArrival() == newFlight.GetArrival();
-        return (idEquality && nameEquality && departureEquality && arrivalEquality);
+        bool statusEquality = this.GetStatus() == newFlight.GetStatus();
+        return (idEquality && nameEquality && departureEquality && arrivalEquality && statusEquality);
       }
     }
 
@@ -56,6 +59,11 @@ namespace Airline.Objects
       return _arrival;
     }
 
+    public string GetStatus()
+    {
+      return _status;
+    }
+
     public void SetName(string name)
     {
       _name = name;
@@ -69,6 +77,11 @@ namespace Airline.Objects
     public void SetArrival(DateTime arrival)
     {
       _arrival = arrival;
+    }
+
+    public void SetStatus(string status)
+    {
+      _status = status;
     }
 
     public static List<Flight> GetAll()
@@ -88,7 +101,8 @@ namespace Airline.Objects
         string flightName = rdr.GetString(1);
         DateTime flightDeparture = rdr.GetDateTime(2);
         DateTime flightArrival = rdr.GetDateTime(3);
-        Flight newFlight = new Flight(flightName, flightDeparture, flightArrival, flightId);
+        string flightStatus = rdr.GetString(4);
+        Flight newFlight = new Flight(flightName, flightDeparture, flightArrival, flightStatus, flightId);
         AllFlights.Add(newFlight);
       }
       if (rdr != null)
@@ -108,7 +122,7 @@ namespace Airline.Objects
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("INSERT INTO flights (name, departure, arrival) OUTPUT INSERTED.id VALUES (@FlightName, @FlightDeparture, @FlightArrival);", conn);
+      SqlCommand cmd = new SqlCommand("INSERT INTO flights (name, departure, arrival, status) OUTPUT INSERTED.id VALUES (@FlightName, @FlightDeparture, @FlightArrival, @FlightStatus);", conn);
 
       SqlParameter nameParameter = new SqlParameter();
       nameParameter.ParameterName = "@FlightName";
@@ -122,9 +136,14 @@ namespace Airline.Objects
       arrivalParameter.ParameterName = "@FlightArrival";
       arrivalParameter.Value = this.GetArrival();
 
+      SqlParameter statusParameter = new SqlParameter();
+      statusParameter.ParameterName = "@FlightStatus";
+      statusParameter.Value = this.GetStatus();
+
       cmd.Parameters.Add(nameParameter);
       cmd.Parameters.Add(departureParameter);
       cmd.Parameters.Add(arrivalParameter);
+      cmd.Parameters.Add(statusParameter);
 
       rdr = cmd.ExecuteReader();
 
@@ -159,6 +178,7 @@ namespace Airline.Objects
       string foundFlightName = "";
       DateTime foundDeparture = new DateTime();
       DateTime foundArrival = new DateTime();
+      string foundStatus = "";
 
       while(rdr.Read())
       {
@@ -166,8 +186,9 @@ namespace Airline.Objects
         foundFlightName = rdr.GetString(1);
         foundDeparture = rdr.GetDateTime(2);
         foundArrival = rdr.GetDateTime(3);
+        foundStatus = rdr.GetString(4);
       }
-      Flight foundFlight = new Flight(foundFlightName, foundDeparture, foundArrival, foundFlightId);
+      Flight foundFlight = new Flight(foundFlightName, foundDeparture, foundArrival, foundStatus, foundFlightId);
 
       if (rdr != null)
       {
@@ -180,13 +201,13 @@ namespace Airline.Objects
       return foundFlight;
     }
 
-    public void Update(string newName, DateTime newDeparture, DateTime newArrival)
+    public void Update(string newName, DateTime newDeparture, DateTime newArrival, string newStatus)
     {
       SqlConnection conn = DB.Connection();
       SqlDataReader rdr;
       conn.Open();
 
-      SqlCommand cmd = new SqlCommand("UPDATE flights SET name = @NewName, departure = @NewDeparture, arrival = @NewArrival OUTPUT INSERTED.name, INSERTED.departure, INSERTED.arrival WHERE id = @FlightId;", conn);
+      SqlCommand cmd = new SqlCommand("UPDATE flights SET name = @NewName, departure = @NewDeparture, arrival = @NewArrival, status = @NewStatus OUTPUT INSERTED.name, INSERTED.departure, INSERTED.arrival, INSERTED.status WHERE id = @FlightId;", conn);
 
       SqlParameter newNameParameter = new SqlParameter();
       newNameParameter.ParameterName = "@NewName";
@@ -203,6 +224,11 @@ namespace Airline.Objects
       newArrivalParameter.Value = newArrival;
       cmd.Parameters.Add(newArrivalParameter);
 
+      SqlParameter newStatusParameter = new SqlParameter();
+      newStatusParameter.ParameterName = "@NewStatus";
+      newStatusParameter.Value = newStatus;
+      cmd.Parameters.Add(newStatusParameter);
+
       SqlParameter flightIdParameter = new SqlParameter();
       flightIdParameter.ParameterName = "@FlightId";
       flightIdParameter.Value = this.GetId();
@@ -214,6 +240,7 @@ namespace Airline.Objects
         this._name = rdr.GetString(0);
         this._departure = rdr.GetDateTime(1);
         this._arrival = rdr.GetDateTime(2);
+        this._status = rdr.GetString(3);
       }
 
       if (rdr != null)
