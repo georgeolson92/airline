@@ -91,9 +91,32 @@ namespace Airline.Objects
       Assert.Equal(newFlightName, testFlight.GetName());
     }
 
+    [Fact]
+    public void Test_AddCities_AddsCitiesToFlight()
+    {
+      //Arrange
+      City departure = new City("Portland");
+      City arrival = new City("Dallas");
+      departure.Save();
+      arrival.Save();
+
+      Flight testFlight = new Flight("Delta44", new DateTime(2015, 1, 18), new DateTime(2015, 1, 19));
+      testFlight.Save();
+
+      //Act
+      testFlight.AddCities(departure, arrival);
+      List<City> result = testFlight.GetCities();
+      List<City> testList = new List<City>{departure, arrival};
+
+      //Assert
+      Assert.Equal(testList, result);
+
+    }
+
     public void Dispose()
     {
       Flight.DeleteAll();
+      City.DeleteAll();
     }
   }
 }

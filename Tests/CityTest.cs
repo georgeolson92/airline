@@ -82,6 +82,7 @@ namespace Airline.Objects
     public void Dispose()
     {
       City.DeleteAll();
+      Flight.DeleteAll();
     }
 
   }

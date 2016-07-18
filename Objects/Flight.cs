@@ -227,6 +227,110 @@ namespace Airline.Objects
       }
     }
 
+    public void AddCities(City newDeparture, City newArrival)
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("INSERT INTO flights_cities (flight_id, departure_city, arriving_city) VALUES (@FlightId, @DepartureId, @ArrivalId)", conn);
+
+      SqlParameter flightIdParameter = new SqlParameter();
+      flightIdParameter.ParameterName = "@FlightId";
+      flightIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(flightIdParameter);
+
+      SqlParameter departureIdParameter = new SqlParameter();
+      departureIdParameter.ParameterName = "@DepartureId";
+      departureIdParameter.Value = newDeparture.GetId();
+      cmd.Parameters.Add(departureIdParameter);
+
+      SqlParameter arrivalIdParameter = new SqlParameter();
+      arrivalIdParameter.ParameterName = "@ArrivalId";
+      arrivalIdParameter.Value = newArrival.GetId();
+      cmd.Parameters.Add(arrivalIdParameter);
+
+      cmd.ExecuteNonQuery();
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
+    public List<City> GetCities()
+    {
+      SqlConnection conn = DB.Connection();
+      SqlDataReader rdr = null;
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("SELECT departure_city, arriving_city FROM flights_cities WHERE flight_id = @FlightId;", conn);
+      SqlParameter flightIdParameter = new SqlParameter();
+      flightIdParameter.ParameterName = "@FlightId";
+      flightIdParameter.Value = this.GetId();
+      cmd.Parameters.Add(flightIdParameter);
+
+      rdr = cmd.ExecuteReader();
+
+      List<int> cityIds = new List<int> {};
+      while(rdr.Read())
+      {
+        int departureId = rdr.GetInt32(0);
+        int arrivalId = rdr.GetInt32(1);
+        cityIds.Add(departureId);
+        cityIds.Add(arrivalId);
+      }
+      if (rdr != null)
+      {
+        rdr.Close();
+      }
+
+      List<City> cities = new List<City> {};
+      foreach (int cityId in cityIds)
+      {
+        SqlDataReader queryReader = null;
+        SqlCommand cityQuery = new SqlCommand("SELECT * FROM cities WHERE id = @CityId;", conn);
+
+        SqlParameter cityIdParameter = new SqlParameter();
+        cityIdParameter.ParameterName = "@CityId";
+        cityIdParameter.Value = cityId;
+        cityQuery.Parameters.Add(cityIdParameter);
+
+        queryReader = cityQuery.ExecuteReader();
+        while (queryReader.Read())
+        {
+          int thisCityId = queryReader.GetInt32(0);
+          string cityName = queryReader.GetString(1);
+          City foundCity = new City(cityName, thisCityId);
+          cities.Add(foundCity);
+        }
+        if (queryReader != null)
+        {
+          queryReader.Close();
+        }
+      }
+      return cities;
+    }
+
+    public void Delete()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("DELETE FROM flights WHERE id = @FlightId; DELETE FROM flights_cities WHERE flight_id = @FlightId;", conn);
+
+      SqlParameter flightIdParameter = new SqlParameter();
+      flightIdParameter.ParameterName = "@FlightId";
+      flightIdParameter.Value = this.GetId();
+
+      cmd.Parameters.Add(flightIdParameter);
+      cmd.ExecuteNonQuery();
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
     public static void DeleteAll()
     {
       SqlConnection conn = DB.Connection();

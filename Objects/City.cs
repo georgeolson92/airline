@@ -171,6 +171,26 @@ namespace Airline.Objects
       }
     }
 
+    public void Delete()
+    {
+      SqlConnection conn = DB.Connection();
+      conn.Open();
+
+      SqlCommand cmd = new SqlCommand("DELETE FROM cities WHERE id = @CityId; DELETE FROM cities_flights WHERE city_id = @CityId;", conn);
+
+      SqlParameter cityIdParameter = new SqlParameter();
+      cityIdParameter.ParameterName = "@CityId";
+      cityIdParameter.Value = this.GetId();
+
+      cmd.Parameters.Add(cityIdParameter);
+      cmd.ExecuteNonQuery();
+
+      if (conn != null)
+      {
+        conn.Close();
+      }
+    }
+
     public static void DeleteAll()
     {
       SqlConnection conn = DB.Connection();
